@@ -1,94 +1,68 @@
 package com.company;
 
-import java.util.IllegalFormatException;
 import java.util.Scanner;
 
 public class Main {
 
+    private static UserInputParser userInputParser = new UserInputParser();
+    private static ArabicRomanNumberConvertor numberConvertor = new ArabicRomanNumberConvertor();
+
     public static void main(String[] args) {
 	// write your code here
-       Scanner scanner = new Scanner(System.in);
-       String userInput = scanner.nextLine();
-       userInput = userInput.trim();
-       if (!correctInput(userInput)) {
-           throw new IllegalArgumentException("format of user input is incorrect");
-       }
-       String arithmeticalSign = defineArithmeticalSign(userInput);
-       String[] numbers;
-       switch (arithmeticalSign) {
-           case "+":
-             numbers = userInput.split("\\+");
-             break;
-           case "*":
-             numbers = userInput.split("\\*");
-             break;
-           default:
-             numbers = userInput.split(arithmeticalSign);
-       }
+        //1, 2 Scan user input and check correctness
+       userInputParser.readUserInput();
+       //3 define arithmetical operation
+       String arithmeticalSign = userInputParser.defineArithmeticalSign();
+       //4 define numbers
+       String[] numbers = userInputParser.defineNumbers(arithmeticalSign);
+       //5 convert numbers from string to int
        int number1, number2;
        boolean romans;
+       //5.1
        if (numbers[0].matches("[0-9]*")) {
            number1 = Integer.parseInt(numbers[0]);
            number2 = Integer.parseInt(numbers[1]);
            romans = false;
+       //5.2 convert roman to arabic
        } else {
-           number1 = RomanNumbers.convertRomanToArabic(numbers[0]);
-           number2 = RomanNumbers.convertRomanToArabic(numbers[1]);
+           number1 = numberConvertor.convertRomanToArabic(numbers[0]);
+           number2 = numberConvertor.convertRomanToArabic(numbers[1]);
            romans = true;
        }
-       double result = 0;
-       if (arithmeticalSign.equals("+")) {
-           result = number1+number2;
-       }
-       if (arithmeticalSign.equals("-")) {
-           result = number1-number2;
-       }
-       if (arithmeticalSign.equals("*")) {
-           result = number1*number2;
-       }
-       if (arithmeticalSign.equals("/")) {
-           result = (double)number1/(double)number2;
-       }
-        System.out.println(romans ? RomanNumbers.convertArabicToRoman((int)result): result);
+       //6 calculate result
+       int result = calculateResult(arithmeticalSign, number1, number2);
+       System.out.println(romans ? numberConvertor.convertArabicToRoman(result): result);
     }
 
-    private static boolean correctInput(String userInput) {
-        return userInput.matches("10[\\+\\-\\*\\//]10") ||
-               userInput.matches("[1-9][\\+\\-\\*\\//]10") ||
-               userInput.matches("10[\\+\\-\\*\\//][1-9]") ||
-               userInput.matches("[1-9][\\+\\-\\*\\//][1-9]") ||
-
-               userInput.matches("I{1,3}[\\+\\-\\*\\//]I{1,3}") ||
-               userInput.matches("I{1,3}[\\+\\-\\*\\//]I?V") ||
-               userInput.matches("I{1,3}[\\+\\-\\*\\//]VI{1,3}") ||
-               userInput.matches("I{1,3}[\\+\\-\\*\\//]I?X") ||
-               userInput.matches("I?V[\\+\\-\\*\\//]I{1,3}") ||
-               userInput.matches("I?V[\\+\\-\\*\\//]I?V") ||
-               userInput.matches("I?V[\\+\\-\\*\\//]VI{1,3}") ||
-               userInput.matches("I?V[\\+\\-\\*\\//]I?X") ||
-               userInput.matches("VI{1,3}[\\+\\-\\*\\//]I{1,3}") ||
-               userInput.matches("VI{1,3}[\\+\\-\\*\\//]I?V") ||
-               userInput.matches("VI{1,3}[\\+\\-\\*\\\\]VI{1,3}") ||
-               userInput.matches("VI{1,3}[\\+\\-\\*\\//]I?X") ||
-               userInput.matches("I?X[\\+\\-\\*\\//]I{1,3}") ||
-               userInput.matches("I?X[\\+\\-\\*\\//]I?V") ||
-               userInput.matches("I?X[\\+\\-\\*\\//]VI{1,3}") ||
-               userInput.matches("I?X[\\+\\-\\*\\//]I?X");
-    }
-
-    private static String defineArithmeticalSign(String expression) {
-        if (expression.contains("+")) {
-            return "+";
+    private static int calculateResult(String arithmeticalSign, int... numbers) {
+        int result = 0;
+        switch (arithmeticalSign) {
+            case "+":
+                result = numbers[0];
+                for (int i = 1; i < numbers.length; i++) {
+                    result += numbers[i];
+                }
+                return result;
+            case "-":
+                result = numbers[0];
+                for (int i = 1; i < numbers.length; i++) {
+                    result -= numbers[i];
+                }
+                return result;
+            case "*":
+                result = numbers[0];
+                for (int i = 1; i < numbers.length; i++) {
+                    result *= numbers[i];
+                }
+                return result;
+            case "/":
+                result = numbers[0];
+                for (int i = 1; i < numbers.length; i++) {
+                    result /= numbers[i];
+                }
+                return result;
+            default:
+                throw new IllegalArgumentException("ArithmeticalSign should be '+', '-', '*' or '/'");
         }
-        if (expression.contains("-")) {
-            return "-";
-        }
-        if (expression.contains("*")) {
-            return "*";
-        }
-        if (expression.contains("/")) {
-            return "/";
-        }
-        throw new IllegalArgumentException("expression doesn't contain arithmetical operation");
     }
 }
